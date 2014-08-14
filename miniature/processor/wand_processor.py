@@ -4,8 +4,6 @@
 # See the LICENSE for more information.
 from __future__ import (print_function, division, absolute_import, unicode_literals)
 
-import math
-
 from wand.api import library
 from wand.image import Image, HistogramDict
 from wand.color import Color
@@ -20,13 +18,6 @@ def fast_histogram(img):
         library.PixelGetColorCount(pixels[i])
         for i in range(h.size.value)
     )
-
-
-def image_entropy(img):
-    hist = fast_histogram(img)
-    hist_size = sum(hist)
-    hist = [x / hist_size for x in hist]
-    return -sum(tuple(p * math.log(p, 2) for p in hist if p != 0))
 
 
 class Processor(BaseProcessor):
