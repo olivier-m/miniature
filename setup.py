@@ -27,7 +27,7 @@ setup(
     author='Olivier Meunier',
     author_email='olivier@neokraft.net',
     license='FreeBSD',
-    url='',
+    url='https://github.com/olivier-m/miniature',
     long_description=readme(),
     keywords='image thumbnail',
     install_requires=[
