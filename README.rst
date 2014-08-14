@@ -18,15 +18,15 @@ Installation
 
 To install Miniature with Pillow backend if you don't have Django installed::
 
-  pip install miniature "[pillow,six]"
+  pip install "miniature[pillow,six]"
 
 With wand backend if you don't have Django installed::
 
-  pip install miniature "[wand,six]"
+  pip install "miniature[wand,six]"
 
 If you plan to use Miniature with Django you can omit the "six" dependency::
 
-  pip install miniature "[pillow]"
+  pip install "miniature[pillow]"
 
 
 The library
