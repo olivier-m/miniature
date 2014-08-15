@@ -4,8 +4,11 @@
 # See the LICENSE for more information.
 from __future__ import (print_function, division, absolute_import, unicode_literals)
 
+import ast
 from math import floor, log
+import operator as op
 import os.path
+import re
 
 # Using django six if present
 try:
@@ -16,8 +19,31 @@ except ImportError:
 BytesIO = six.BytesIO
 
 
-class MiniatureParserError(Exception):
-    pass
+operators = {
+    ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
+    ast.Div: op.truediv, ast.Mod: op.mod, ast.Pow: op.pow,
+    ast.BitXor: op.xor, ast.USub: op.neg,
+}
+
+
+def eval_(node):
+    if isinstance(node, ast.Num): # <number>
+        return node.n
+    elif isinstance(node, ast.BinOp): # <left> <operator> <right>
+        return operators[type(node.op)](eval_(node.left), eval_(node.right))
+    elif isinstance(node, ast.UnaryOp): # <operator> <operand> e.g., -1
+        return operators[type(node.op)](eval_(node.operand))
+    else:
+        raise TypeError(node)
+
+
+def eval_expr(expr):
+    return eval_(ast.parse(expr, mode='eval').body)
+
+
+def operation(func):
+    func.is_operation = True
+    return func
 
 
 class BaseProcessor(object):
@@ -116,16 +142,30 @@ class BaseProcessor(object):
 
         return self._get_color(color)
 
+    def operations(self, *args):
+        args = self._parse_operations(args)
+        for name, values in args:
+            meth = getattr(self, name, None)
+            if meth is None or not getattr(meth, 'is_operation', None):
+                raise ValueError('Operation "{0}" does not exist.'.format(name))
+
+            getattr(self, name)(*values)
+
+        return self
+
+    @operation
     def set_mode(self, mode, **options):
         self.assert_open()
         self.img = self._set_mode(self.img, mode, **options)
         return self
 
+    @operation
     def set_background(self, color):
         self.assert_open()
         self.img = self._set_background(self.img, self.color(color))
         return self
 
+    @operation
     def crop(self, *args):
         self.assert_open()
 
@@ -204,11 +244,13 @@ class BaseProcessor(object):
         self.img = self._crop(self.img, x1, y1, x2, y2)
         return self
 
+    @operation
     def resize(self, w, h, filter=None):
         self.assert_open()
         self.img = self._resize(self.img, w, h, self.FILTERS.get(filter) or self.DEFAULT_FILTER)
         return self
 
+    @operation
     def thumbnail(self, w, h, filter=None, upscale=False):
         self.assert_open()
 
@@ -218,11 +260,13 @@ class BaseProcessor(object):
         )
         return self
 
+    @operation
     def rotate(self, angle):
         self.assert_open()
         self.img = self._rotate(self.img, angle)
         return self
 
+    @operation
     def add_border(self, width, color):
         self.assert_open()
         self.img = self._add_border(self.img, width, self.color(color))
@@ -301,6 +345,21 @@ class BaseProcessor(object):
         size = sum(histogram)
         histogram = [x / size for x in histogram]
         return -sum(tuple(p * log(p, 2) for p in histogram if p != 0))
+
+    def _parse_operations(self, operations):
+        args = []
+        for name, value in operations:
+            values = []
+            for x in re.split(r'\s*,\s*', value):
+                if x.strip() != '':
+                    try:
+                        x = eval_expr(x)
+                    except (TypeError, KeyError):
+                        pass
+                values.append(x)
+            args.append((name, values))
+
+        return args
 
     #
     # Methods to implement

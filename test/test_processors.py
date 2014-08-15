@@ -130,6 +130,13 @@ class ProcessorTestCase(object):
         with self.processor(self.get_asset('beach.jpg')) as p:
             p.add_border(5, 'white').add_border(5, '#c00').save(self.get_dest('border'))
 
+    def test_operations(self):
+        with self.processor(self.get_asset('tiger.jpg')) as p:
+            p.operations(('thumbnail', '600,600'), ('crop', '2/1,center'))
+            self.assertEqual(p.size, (600, 300))
+
+            self.assertRaises(ValueError, p.operations, ('save', ''))
+
 
 class PillowTests(ProcessorTestCase, TestCase):
     processor = get_processor('pillow')

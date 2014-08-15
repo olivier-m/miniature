@@ -41,7 +41,7 @@ setup(
     test_suite='test',
     packages=packages,
     include_package_data=True,
-    zip_safe=False,
+    zip_safe=True,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
