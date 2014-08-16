@@ -13,6 +13,9 @@ Backends
 Miniature comes with two supported backends: `Pillow <http://pillow.readthedocs.org/>`_ and
 `Wand <http://docs.wand-py.org/>`_.
 
+**Note:** Although Wand backend produce is very powerful in some areas it faces some performance
+issues and memory leaks.
+
 Installation
 ============
 
@@ -91,7 +94,7 @@ To crop with a ratio a a position offset::
 
   p.crop(1, '-50%', 20)
 
-Offsets are dimensions moving the cropped section from the centre of the image. They could be
+Offsets are dimensions moving the cropped section from the center of the image. They could be
 percentage or integer (for pixels).
 
 Finally to let the processor determine where to move the cropped zone, you can ask him to be smart

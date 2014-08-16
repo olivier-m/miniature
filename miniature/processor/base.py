@@ -27,11 +27,11 @@ operators = {
 
 
 def eval_(node):
-    if isinstance(node, ast.Num): # <number>
+    if isinstance(node, ast.Num):  # <number>
         return node.n
-    elif isinstance(node, ast.BinOp): # <left> <operator> <right>
+    elif isinstance(node, ast.BinOp):  # <left> <operator> <right>
         return operators[type(node.op)](eval_(node.left), eval_(node.right))
-    elif isinstance(node, ast.UnaryOp): # <operator> <operand> e.g., -1
+    elif isinstance(node, ast.UnaryOp):  # <operator> <operand> e.g., -1
         return operators[type(node.op)](eval_(node.operand))
     else:
         raise TypeError(node)
@@ -283,32 +283,42 @@ class BaseProcessor(object):
         self.assert_open()
         return self._get_histogram(self.img)
 
-    def get_poi(self, size=210, block_size=70):
+    def get_poi(self, size=210, zoning=None):
         """
         Returns the image zone coordinates with most information (point of interest)
         """
         self.assert_open()
-        if size % block_size != 0:
-            raise ValueError('block_size should be a multiple of size.')
+
+        def get_zones(size_, zoning_):
+            result = []
+            w, rest = size_ // zoning_, size_ % zoning_
+
+            o = 0
+            while o < size_ - rest:
+                t_ = [o and o + 1 or o]
+                o += w
+                t_.append(o)
+                result.append(t_)
+
+            if rest:
+                result[-1][1] += rest
+            return result
+
+        zoning = zoning or (3, 3)
 
         img = self._copy_image(self.img)
         img = self._thumbnail(img, size, size, self.DEFAULT_FILTER, False)
         # img = self._set_mode(img, 'grayscale')
 
-        w, h = self._get_size(img)
-        cols = min(size // block_size, w // block_size)
-        rows = min(size // block_size, h // block_size)
+        cols = get_zones(img.size[0], zoning[0])
+        rows = get_zones(img.size[1], zoning[1])
+
         zones = []
 
-        for x in range(0, cols):
-            for y in range(0, rows):
+        for x in cols:
+            for y in rows:
                 tmp_ = self._copy_image(img)
-                x1 = x * block_size
-                y1 = y * block_size
-                x2 = x1 + block_size <= w and x1 + block_size or w
-                y2 = y1 + block_size <= h and y1 + block_size or h
-                coords = (x1, y1, x2, y2)
-
+                coords = (x[0], y[0], x[1], y[1])
                 tmp_ = self._crop(tmp_, *coords)
                 zones.append((coords, self._get_entropy(tmp_)))
                 tmp_.close()
