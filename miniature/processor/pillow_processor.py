@@ -76,15 +76,6 @@ class Processor(BaseProcessor):
     def _resize(self, img, w, h, filter=None):
         return img.resize((w, h), filter)
 
-    def _thumbnail(self, img, w, h, filter, upscale):
-        if upscale:
-            factor = min(w / img.size[0], h / img.size[1])
-            size = tuple(int(round(x * factor)) for x in img.size)
-            return img.resize(size, filter)
-        else:
-            img.thumbnail((w, h), filter)
-        return img
-
     def _rotate(self, img, angle):
         return img.rotate(-angle, resample=Image.BICUBIC, expand=True)
 

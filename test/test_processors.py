@@ -117,10 +117,16 @@ class ProcessorTestCase(object):
             size = p.size
             p.thumbnail(700, 700).save(self.get_dest('thumbnail2'))
             self.assertEqual(size, p.size)
-
-        with self.processor(self.get_asset('mona-lisa.jpg')) as p:
             p.thumbnail(700, 700, upscale=True).save(self.get_dest('thumbnail3'))
-            self.assertEqual(p.size, (470, 700))
+            self.assertEqual(p.size, (469, 700))
+
+        with self.processor(self.get_asset('tiger.jpg')) as p:
+            p.thumbnail(None, 200)
+            self.assertEqual(p.size, (355, 200))
+
+        with self.processor(self.get_asset('tiger.jpg')) as p:
+            p.thumbnail(200, 0)
+            self.assertEqual(p.size, (200, 112))
 
     def test_rotate(self):
         with self.processor(self.get_asset('beach.jpg')) as p:
@@ -136,6 +142,30 @@ class ProcessorTestCase(object):
             self.assertEqual(p.size, (600, 300))
 
             self.assertRaises(ValueError, p.operations, ('save', ''))
+
+        with self.processor(self.get_asset('tiger.jpg')) as p:
+            p.operations(('thumbnail', 'None,200'))
+            self.assertEqual(p.size, (355, 200))
+
+        with self.processor(self.get_asset('tiger.jpg')) as p:
+            p.operations(('thumbnail', ',200'))
+            self.assertEqual(p.size, (355, 200))
+            self.assertTrue(p.size[0] > p.size[1])
+
+        with self.processor(self.get_asset('tiger.jpg')) as p:
+            p.operations(('thumbnail', '200,None'))
+            self.assertEqual(p.size, (200, 112))
+
+        with self.processor(self.get_asset('tiger.jpg')) as p:
+            p.operations(('thumbnail', '200,'))
+            self.assertEqual(p.size, (200, 112))
+
+        with self.processor(self.get_asset('mona-lisa.jpg')) as p:
+            size = p.size
+            p.operations(('thumbnail', '700,700'))
+            self.assertEqual(size, p.size)
+            p.operations(('thumbnail', '700,700,True'))
+            self.assertEqual(p.size, (469, 700))
 
 
 class PillowTests(ProcessorTestCase, TestCase):

@@ -5,7 +5,7 @@
 from __future__ import (print_function, division, absolute_import, unicode_literals)
 
 from wand.api import library
-from wand.image import Image, HistogramDict
+from wand.image import Image, HistogramDict, FILTER_TYPES
 from wand.color import Color
 
 from .base import BaseProcessor
@@ -21,6 +21,9 @@ def fast_histogram(img):
 
 
 class Processor(BaseProcessor):
+    FILTERS = dict(zip(FILTER_TYPES, FILTER_TYPES))
+    DEFAULT_FILTER = 'lanczos2sharp'
+
     def _open_image(self, fp):
         im = Image(file=fp)
         info = {}
@@ -77,11 +80,6 @@ class Processor(BaseProcessor):
 
     def _resize(self, img, w, h, filter):
         img.resize(w, h, filter or 'undefined')
-        return img
-
-    def _thumbnail(self, img, w, h, filter, upscale):
-        geometry = upscale and '{0}x{1}' or '{0}x{1}>'
-        img.transform(resize=geometry.format(w, h))
         return img
 
     def _rotate(self, img, angle):

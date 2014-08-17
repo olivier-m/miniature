@@ -33,6 +33,8 @@ def eval_(node):
         return operators[type(node.op)](eval_(node.left), eval_(node.right))
     elif isinstance(node, ast.UnaryOp):  # <operator> <operand> e.g., -1
         return operators[type(node.op)](eval_(node.operand))
+    elif isinstance(node, ast.Name) and node.id in ('None', 'True', 'False'):
+        return ast.literal_eval(node)
     else:
         raise TypeError(node)
 
@@ -251,13 +253,15 @@ class BaseProcessor(object):
         return self
 
     @operation
-    def thumbnail(self, w, h, filter=None, upscale=False):
+    def thumbnail(self, w, h, upscale=False, filter=None):
         self.assert_open()
+        scale = self._get_scale_size(self.img, w, h, upscale)
+        if scale:
+            self.img = self._resize(self.img,
+                filter=self.FILTERS.get(filter) or self.DEFAULT_FILTER,
+                *scale
+            )
 
-        self.img = self._thumbnail(self.img, w, h,
-            self.FILTERS.get(filter) or self.DEFAULT_FILTER,
-            upscale
-        )
         return self
 
     @operation
@@ -307,8 +311,9 @@ class BaseProcessor(object):
         zoning = zoning or (3, 3)
 
         img = self._copy_image(self.img)
-        img = self._thumbnail(img, size, size, self.DEFAULT_FILTER, False)
-        # img = self._set_mode(img, 'grayscale')
+        scale = self._get_scale_size(img, size, size, False)
+        if scale:
+            img = self._resize(img, filter=self.DEFAULT_FILTER, *scale)
 
         cols = get_zones(img.size[0], zoning[0])
         rows = get_zones(img.size[1], zoning[1])
@@ -333,6 +338,21 @@ class BaseProcessor(object):
             (zone[2] - zone[0]) // 2 + zone[0],
             (zone[3] - zone[1]) // 2 + zone[1],
         )
+
+    def _get_scale_size(self, img, w, h, upscale=False):
+        factors = []
+        if w not in (None, '', 0):
+            factors.append(w / img.size[0])
+        if h not in (None, '', 0):
+            factors.append(h / img.size[1])
+
+        if len(factors) == 0:
+            return
+
+        factor = min(factors)
+
+        if upscale or factor < 1:
+            return tuple(int(floor(x * factor)) for x in img.size)
 
     def _get_color(self, color):
         """
@@ -402,9 +422,6 @@ class BaseProcessor(object):
         raise NotImplementedError
 
     def _resize(self, img, w, h, filter):
-        raise NotImplementedError
-
-    def _thumbnail(self, img, w, h, filter, upscale):
         raise NotImplementedError
 
     def _rotate(self, img, angle):
