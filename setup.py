@@ -34,10 +34,9 @@ setup(
     ],
     extras_require={
         'pillow': ['pillow'],
-        'wand': ['wand'],
         'six': ['six'],
     },
-    tests_require=['pillow', 'wand', 'six'],
+    tests_require=['pillow', 'six'],
     test_suite='test',
     packages=packages,
     include_package_data=True,

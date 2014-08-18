@@ -10,11 +10,9 @@ Miniature is two tools in one:
 Backends
 ========
 
-Miniature comes with two supported backends: `Pillow <http://pillow.readthedocs.org/>`_ and
-`Wand <http://docs.wand-py.org/>`_.
+Miniature comes with one supported backends: `Pillow <http://pillow.readthedocs.org/>`_.
 
-**Note:** Although Wand backend produce is very powerful in some areas it faces some performance
-issues and memory leaks.
+**Note:** Due to major performance issues and lack of features Wand backend has been removed.
 
 Installation
 ============
@@ -22,10 +20,6 @@ Installation
 To install Miniature with Pillow backend if you don't have Django installed::
 
   pip install "miniature[pillow,six]"
-
-With wand backend if you don't have Django installed::
-
-  pip install "miniature[wand,six]"
 
 If you plan to use Miniature with Django you can omit the "six" dependency::
 

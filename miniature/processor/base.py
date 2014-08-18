@@ -33,6 +33,9 @@ def eval_(node):
         return operators[type(node.op)](eval_(node.left), eval_(node.right))
     elif isinstance(node, ast.UnaryOp):  # <operator> <operand> e.g., -1
         return operators[type(node.op)](eval_(node.operand))
+    elif (hasattr(ast, 'NameConstant') and isinstance(node, ast.NameConstant)
+    and node.value in (None, True, False)):
+        return node.value
     elif isinstance(node, ast.Name) and node.id in ('None', 'True', 'False'):
         return ast.literal_eval(node)
     else:

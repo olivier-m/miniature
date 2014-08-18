@@ -170,7 +170,3 @@ class ProcessorTestCase(object):
 
 class PillowTests(ProcessorTestCase, TestCase):
     processor = get_processor('pillow')
-
-
-class WandTests(ProcessorTestCase, TestCase):
-    processor = get_processor('wand')
