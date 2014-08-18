@@ -159,6 +159,11 @@ class BaseProcessor(object):
         return self
 
     @operation
+    def orientation(self):
+        self.img = self._orientation(self.img)
+        return self
+
+    @operation
     def set_mode(self, mode, **options):
         self.assert_open()
         self.img = self._set_mode(self.img, mode, **options)
@@ -410,6 +415,9 @@ class BaseProcessor(object):
         raise NotImplementedError
 
     def _get_size(self, img):
+        raise NotImplementedError
+
+    def _orientation(self, img):
         raise NotImplementedError
 
     def _get_mode(self, img):

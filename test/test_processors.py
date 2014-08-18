@@ -128,6 +128,12 @@ class ProcessorTestCase(object):
             p.thumbnail(200, 0)
             self.assertEqual(p.size, (200, 112))
 
+    def test_orientation(self):
+        with self.processor(self.get_asset('mona-lisa.jpg')) as p:
+            size = p.size
+            p.orientation()
+            self.assertEqual(p.size, size)
+
     def test_rotate(self):
         with self.processor(self.get_asset('beach.jpg')) as p:
             p.rotate(5).save(self.get_dest('rotate'))

@@ -65,6 +65,34 @@ class Processor(BaseProcessor):
         mode = self.MODES[mode]
         return img.convert(mode, **options)
 
+    def _orientation(self, img):
+        try:
+            exif = img._getexif()
+        except (AttributeError, IOError, KeyError, IndexError):
+            return img
+
+        if exif is None:
+            return img
+
+        orientation = exif.get(0x0112)
+
+        if orientation == 2:
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
+        elif orientation == 3:
+            img = img.rotate(180)
+        elif orientation == 4:
+            img = img.transpose(Image.FLIP_TOP_BOTTOM)
+        elif orientation == 5:
+            img = img.rotate(-90).transpose(Image.FLIP_LEFT_RIGHT)
+        elif orientation == 6:
+            img = img.rotate(-90)
+        elif orientation == 7:
+            img = img.rotate(90).transpose(Image.FLIP_LEFT_RIGHT)
+        elif orientation == 8:
+            img = img.rotate(90)
+
+        return img
+
     def _set_background(self, img, color):
         bg = Image.new('RGBA', self.img.size, color)
         bg.paste(self.img, mask=self.img)
