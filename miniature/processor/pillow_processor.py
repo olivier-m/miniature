@@ -4,7 +4,7 @@
 # See the LICENSE for more information.
 from __future__ import (print_function, division, absolute_import, unicode_literals)
 
-from PIL import Image, ImageColor
+from PIL import Image, ImageColor, ExifTags
 
 from .base import BaseProcessor
 
@@ -30,12 +30,12 @@ class Processor(BaseProcessor):
     }
 
     def _open_image(self, fp):
-        im = Image.open(fp)
-        info = im.info
-        info.update({
-            'format': im.format
-        })
-        return im, info
+        img = Image.open(fp)
+
+        info = {
+            'format': img.format
+        }
+        return img, info
 
     def _close(self, img):
         img.close()
@@ -46,6 +46,12 @@ class Processor(BaseProcessor):
 
     def _copy_image(self, img):
         return img.copy()
+
+    def _get_exif(self, img):
+        try:
+            return img._getexif()
+        except (AttributeError, IOError, KeyError, IndexError):
+            return None
 
     def _get_color(self, color):
         try:
@@ -66,10 +72,7 @@ class Processor(BaseProcessor):
         return img.convert(mode, **options)
 
     def _orientation(self, img):
-        try:
-            exif = img._getexif()
-        except (AttributeError, IOError, KeyError, IndexError):
-            return img
+        exif = self._get_exif(img)
 
         if exif is None:
             return img

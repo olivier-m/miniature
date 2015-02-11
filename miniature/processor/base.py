@@ -187,6 +187,10 @@ class BaseProcessor(object):
 
         aliases = {
             'center': [0, 0],
+            'top': [0, '-100%'],
+            'bottom': [0, '100%'],
+            'left': ['-100%', 0],
+            'right': ['100%', 0],
             'top-left': ['-100%', '-100%'],
             'top-right': ['100%', '-100%'],
             'bottom-left': ['-100%', '100%'],
@@ -239,7 +243,7 @@ class BaseProcessor(object):
 
             if offset_x < 0:
                 x1 = max(0, x1 + offset_x)
-                x2 = x1 + nh
+                x2 = x1 + nw
 
             if offset_y > 0:
                 y2 = min(h, y2 + offset_y)
